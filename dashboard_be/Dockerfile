@@ -10,9 +10,7 @@ COPY package*.json /usr/src/app
 # Sao chép mã nguồn ứng dụng vào thư mục làm việc
 
 
-RUN npm install --legacy-peer-deps -g @nestjs/cli
-# Cài đặt các dependencies
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 COPY . .
 
