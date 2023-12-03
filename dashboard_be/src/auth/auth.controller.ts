@@ -1,29 +1,50 @@
 import {
   Body,
   Controller,
-  Get,
-  HttpCode,
+  HttpException,
   HttpStatus,
   Post,
-  Request,
-  UseGuards
+  UnauthorizedException,
 } from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
-import { AuthService } from './auth.service';
+import { AuthDto } from './auth.dto';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
-
-  @HttpCode(HttpStatus.OK)
-  @Post('login')
-  signIn(@Body() signInDto: Record<string, any>) {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+  constructor(
+    private userService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+  @Post('sign-up')
+  async register(@Body() infoAuth: AuthDto) {
+    const user = await this.userService.findOne(infoAuth.email);
+    if (!user) {
+      try {
+        await this.userService.createUser(infoAuth.email, infoAuth.password);
+      } catch (e) {
+        throw new HttpException('Not create user', HttpStatus.BAD_REQUEST);
+      }
+      return { status: 'success' };
+    } else {
+      throw new HttpException('User exist', HttpStatus.FOUND);
+    }
   }
 
-  @UseGuards(AuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  @Post('sign-in')
+  async login(@Body() infoAuth: AuthDto) {
+    try {
+      const user = await this.userService.findOne(infoAuth.email);
+      if (user) {
+        const payload = { sub: user.id, email: user.email };
+        return {
+          access_token: await this.jwtService.signAsync(payload),
+        };
+      } else {
+        throw new UnauthorizedException();
+      }
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
   }
 }
