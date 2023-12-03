@@ -8,3 +8,5 @@ services:
     ports:
       - '5001:5000' # expose-to-the-world : only-in-the-docker
     container_name: backend-app-iot
+    volumes:
+      - ./order-food:/usr/src/app/order-food
