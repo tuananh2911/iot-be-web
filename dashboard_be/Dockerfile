@@ -9,10 +9,11 @@ COPY package*.json /usr/src/app
 
 # Sao chép mã nguồn ứng dụng vào thư mục làm việc
 
+COPY . .
 
 RUN npm install
 
-COPY . .
+
 
 # Mở cổng 5000 cho ứng dụng NestJS
 EXPOSE 5000
